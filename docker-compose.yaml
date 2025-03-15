@@ -1,0 +1,39 @@
+version: '3'
+services:
+  web:
+    platform: linux/x86_64
+    container_name: ${WEB_HOST}
+    build: ${WEB_BUILD}
+    env_file:
+      - .env
+    depends_on:
+      - db16
+    ports:
+      - "${WEB_PORT}:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+      - ./addons-customize:/mnt/extra-addons-customize
+    environment:
+      - VIRTUAL_HOST=odoo15.marlonfalcon.com
+    entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf -i base"
+    restart: always
+  db16:
+    platform: linux/x86_64
+    container_name: ${DB_HOST}
+    image: ${DB_IMAGE}:${DB_TAG}
+    environment:
+      - POSTGRES_DB=db16
+      - POSTGRES_PASSWORD=odoo16
+      - POSTGRES_USER=odoo16
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+    restart: always
+
+volumes:
+  odoo-db-data:
+  odoo-web-data:
