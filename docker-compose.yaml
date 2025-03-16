@@ -14,19 +14,20 @@ services:
       - odoo-web-data:/var/lib/odoo
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
-      - ./addons-customize:/mnt/extra-addons-customize
-    environment:
-      - VIRTUAL_HOST=odoo15.marlonfalcon.com
-    entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf -i base"
+      - ./addons-enterprise:/mnt/enterprise-addons
+      - ./init-script.sh:/init-script.sh
+      - ./init-db.sql:/init-db.sql
+    user: root
+    entrypoint: ["/bin/sh", "-c", "chmod +x /init-script.sh && /init-script.sh"]
     restart: always
   db16:
     platform: linux/x86_64
     container_name: ${DB_HOST}
     image: ${DB_IMAGE}:${DB_TAG}
     environment:
-      - POSTGRES_DB=db16
-      - POSTGRES_PASSWORD=odoo16
-      - POSTGRES_USER=odoo16
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PASSWD}
+      - POSTGRES_USER=${DB_USER}
       - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
       - "${DB_PORT}:5432"

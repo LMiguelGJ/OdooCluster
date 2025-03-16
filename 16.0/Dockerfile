@@ -81,12 +81,10 @@ RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/od
 COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
 
-# Copy enterprise addons
-COPY addons-enterprise /mnt/enterprise-addons
-
 # Set permissions and Mount volumes
 RUN chown odoo /etc/odoo/odoo.conf \
     && mkdir -p /mnt/extra-addons \
+    && mkdir -p /mnt/enterprise-addons \
     && chown -R odoo /mnt/extra-addons \
     && chown -R odoo /mnt/enterprise-addons
 
