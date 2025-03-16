@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Modificar el archivo SQL antes de ejecutarlo usando awk
+echo "Modificando el archivo SQL..."
+awk -v exp_date="$EXPIRATION_DATE" -v ent_code="$ENTERPRISE_CODE" '
+{
+  gsub(/v_expiration_date TIMESTAMP := '\''[^'\'']*'\'';/, "v_expiration_date TIMESTAMP := '\''" exp_date "'\'';");
+  gsub(/v_enterprise_code TEXT := '\''[^'\'']*'\'';/, "v_enterprise_code TEXT := '\''" ent_code "'\'';");
+  print
+}' init-db.sql > temp.sql && cp temp.sql init-db.sql && rm temp.sql
+
 # Ejecutar Odoo
 echo "Iniciando Odoo..."
 sleep 5
@@ -15,6 +24,7 @@ do
 done
 
 echo "Odoo está disponible."
+
 
 # Función para ejecutar comandos SQL con reintentos
 execute_sql_with_retries() {
@@ -59,4 +69,4 @@ sleep 5
 
 # Reiniciar Odoo
 echo "Reiniciando Odoo..."
-/usr/bin/odoo -c /etc/odoo/odoo.conf -i web_enterprise -d ${DB_NAME}
+/usr/bin/odoo -c /etc/odoo/odoo.conf -i web_studio -d ${DB_NAME}
