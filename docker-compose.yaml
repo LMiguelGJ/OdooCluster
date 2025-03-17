@@ -1,17 +1,17 @@
 version: '3'
 services:
-  web:
+  odoo:
     platform: linux/x86_64
     container_name: ${WEB_HOST}
     build: ${WEB_BUILD}
     env_file:
       - .env
     depends_on:
-      - db16
+      - db
     ports:
       - "${WEB_PORT}:8069"
     volumes:
-      - odoo-web-data:/var/lib/odoo
+      - odoo-data:/var/lib/odoo
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
       - ./addons-enterprise:/mnt/enterprise-addons
@@ -20,7 +20,7 @@ services:
     user: root
     entrypoint: ["/bin/sh", "-c", "chmod +x /init-script.sh && /init-script.sh"]
     restart: always
-  db16:
+  db:
     platform: linux/x86_64
     container_name: ${DB_HOST}
     image: ${DB_IMAGE}:${DB_TAG}
@@ -37,4 +37,4 @@ services:
 
 volumes:
   odoo-db-data:
-  odoo-web-data:
+  odoo-data:
