@@ -15,8 +15,8 @@ services:
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
       - ./addons-enterprise:/mnt/enterprise-addons
-      - ./init-script.sh:/init-script.sh
-      - ./init-db.sql:/init-db.sql
+      - ${WEB_BUILD}/init-script.sh:/init-script.sh
+      - ${WEB_BUILD}/init-db.sql:/init-db.sql
     user: root
     entrypoint: ["/bin/sh", "-c", "chmod +x /init-script.sh && /init-script.sh"]
     restart: always

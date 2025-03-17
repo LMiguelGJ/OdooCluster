@@ -9,6 +9,29 @@ awk -v exp_date="$EXPIRATION_DATE" -v ent_code="$ENTERPRISE_CODE" '
   print
 }' init-db.sql > temp.sql && cp temp.sql init-db.sql && rm temp.sql
 
+
+# Ruta de configuración de Odoo
+ODOO_CONF="/etc/odoo/odoo.conf"
+TEMP_CONF="/etc/odoo/temp_odoo.conf"
+
+# Crear un nuevo archivo de configuración temporal con la sección [options]
+echo "[options]" > "$TEMP_CONF"
+
+# Leer todas las variables de entorno excluyendo las críticas
+env | grep -vE '^(PATH|HOSTNAME|TERM|SHELL|USER|PWD|HOME|SHLVL|LOGNAME|_|WEB_PORT|WEB_HOST|WEB_BUILD|EXPIRATION_DATE|ENTERPRISE_CODE)' | while IFS= read -r line; do
+    # Validar que la línea no esté vacía
+    if [ -n "$line" ]; then
+        # Convertir clave a minúscula, agregar espacios alrededor del '=', y escribir en el archivo temporal
+        key=$(echo "$line" | cut -d= -f1 | tr '[:upper:]' '[:lower:]')
+        value=$(echo "$line" | cut -d= -f2-)
+        echo "$key = $value" >> "$TEMP_CONF"
+    fi
+done
+
+# Reemplazar el archivo de configuración original con el temporal
+mv "$TEMP_CONF" "$ODOO_CONF"
+
+
 # Ejecutar Odoo
 echo "Iniciando Odoo..."
 sleep 5
