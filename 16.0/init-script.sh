@@ -35,7 +35,7 @@ mv "$TEMP_CONF" "$ODOO_CONF"
 # Ejecutar Odoo
 echo "Iniciando Odoo..."
 sleep 5
-/usr/bin/odoo -c /etc/odoo/odoo.conf -i base -d ${DB_NAME} & 
+/usr/bin/odoo -c /etc/odoo/odoo.conf -u all & 
 ODOO_PID=$!
 
 # Esperar a que Odoo esté completamente disponible
@@ -92,4 +92,4 @@ sleep 5
 
 # Reiniciar Odoo
 echo "Reiniciando Odoo..."
-/usr/bin/odoo -c /etc/odoo/odoo.conf -i web_studio -d ${DB_NAME}
+/usr/bin/odoo -c /etc/odoo/odoo.conf -i web_studio -u all
