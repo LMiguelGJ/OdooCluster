@@ -40,7 +40,7 @@ ODOO_PID=$!
 
 # Esperar a que Odoo esté completamente disponible
 echo "Esperando a que Odoo esté disponible..."
-until curl -s http://localhost:${WEB_PORT}/web/login | grep -q "Odoo"
+until curl -s http://odoo.localhost/web/login | grep -q "Odoo"
 do
   echo "Odoo no está disponible aún. Esperando..."
   sleep 5
@@ -92,4 +92,4 @@ sleep 5
 
 # Reiniciar Odoo
 echo "Reiniciando Odoo..."
-/usr/bin/odoo -c /etc/odoo/odoo.conf -i web_studio -u all
+/usr/bin/odoo -c /etc/odoo/odoo.conf -i web_studio -u web
