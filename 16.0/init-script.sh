@@ -35,19 +35,21 @@ mv "$TEMP_CONF" "$ODOO_CONF"
 # Ejecutar Odoo
 echo "Iniciando Odoo..."
 sleep 5
-/usr/bin/odoo -c /etc/odoo/odoo.conf -u all & 
+# Iniciar Odoo en modo "stop-after-init"
+echo "Iniciando Odoo y esperando que cargue todos los módulos..."
+/usr/bin/odoo -c /etc/odoo/odoo.conf -u all --stop-after-init &  
 ODOO_PID=$!
 
-# Esperar a que Odoo esté completamente disponible
-echo "Esperando a que Odoo esté disponible..."
-until curl -s http://odoo.localhost/web/login | grep -q "Odoo"
-do
-  echo "Odoo no está disponible aún. Esperando..."
-  sleep 5
-done
+# Esperar a que Odoo termine
+echo "Esperando que Odoo finalice su carga y se detenga..."
+wait $ODOO_PID
 
-echo "Odoo está disponible."
-
+if [ $? -eq 0 ]; then
+    echo "Odoo se ha detenido correctamente."
+else
+    echo "Error: Odoo no se detuvo correctamente." 
+    exit 1
+fi
 
 # Función para ejecutar comandos SQL con reintentos
 execute_sql_with_retries() {
@@ -80,16 +82,6 @@ execute_sql_with_retries
 
 sleep 5
 
-# Detener Odoo
-echo "Deteniendo Odoo..."
-if kill $ODOO_PID 2>/dev/null; then
-    echo "Proceso Odoo (PID: $ODOO_PID) detenido"
-else
-    echo "No se pudo detener el proceso de Odoo"
-fi
-
-sleep 5
-
-# Reiniciar Odoo
-echo "Reiniciando Odoo..."
+# Reiniciar Odoo con módulos adicionales
+echo "Reiniciando Odoo con web_studio..."
 /usr/bin/odoo -c /etc/odoo/odoo.conf -i web_studio -u web
