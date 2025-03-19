@@ -3,17 +3,21 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_PASSWORD: odoo16
-      POSTGRES_USER: odoo16
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - odoo-db-data:/var/lib/postgresql/data/pgdata
+      - ./${CLIENT_NAME}/pgdata:/var/lib/postgresql/data/pgdata
     networks:
-      - agent_network
-      - traefik_public
+      agent_network:
+        aliases:
+          - ${DB_HOST}
+      traefik_public:
+        aliases:
+          - ${DB_HOST}
 
   odoo:
     image: odoo:16.0-20250311
@@ -22,30 +26,27 @@ services:
     depends_on:
       - db
     volumes:
-      - odoo-web-data:/var/lib/odoo
-      - ./config:/etc/odoo
-      - ./addons:/mnt/extra-addons
-      - ./addons-enterprise:/mnt/enterprise-addons
-      - ./16.0/init-script.sh:/init-script.sh
-      - ./16.0/init-db.sql:/init-db.sql
+      - ./${CLIENT_NAME}/odoo:/var/lib/odoo
+      - ./${CLIENT_NAME}/config:/etc/odoo
+      - ./${CLIENT_NAME}/addons:/mnt/extra-addons
+      - ./${WEB_BUILD}/addons-enterprise:/mnt/enterprise-addons
     user: root
-    entrypoint: ["/bin/sh", "-c", "chmod +x /init-script.sh && /init-script.sh"]
+    entrypoint: ["/bin/sh", "-c", "cp /init-script.sh /tmp/init-script.sh && chmod +x /tmp/init-script.sh && /tmp/init-script.sh"]
+    configs:
+      - source: init_script
+        target: /init-script.sh
+      - source: init_db_sql
+        target: /init-db.sql
     networks:
       - agent_network
       - traefik_public
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.odoo.rule=Host(`odoo.localhost`)"
+        - "traefik.http.routers.odoo.rule=Host(`${WEB_HOST}`)"
         - "traefik.http.routers.odoo.entrypoints=websecure"
         - "traefik.http.routers.odoo.tls.certresolver=le"
-        - "traefik.http.services.odoo.loadbalancer.server.port=8069"
-
-volumes:
-  odoo-db-data:
-    driver: local
-  odoo-web-data:
-    driver: local
+        - "traefik.http.services.odoo.loadbalancer.server.port=${WEB_PORT}"
 
 networks:
   traefik_public:
@@ -53,3 +54,9 @@ networks:
     attachable: true
   agent_network:
     external: true
+
+configs:
+  init_script:
+    file: ./${WEB_BUILD}/init-script.sh
+  init_db_sql:
+    file: ./${WEB_BUILD}/init-db.sql
