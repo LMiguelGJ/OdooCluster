@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./${CLIENT_NAME}/pgdata:/var/lib/postgresql/data/pgdata
+      - ./home/OdooCluster/${CLIENT_NAME}/pgdata:/var/lib/postgresql/data/pgdata
     networks:
       agent_network:
         aliases:
@@ -21,15 +21,13 @@ services:
 
   odoo:
     image: odoo:16.0-20250311
-    env_file:
-      - .env
     depends_on:
       - db
     volumes:
-      - ./${CLIENT_NAME}/odoo:/var/lib/odoo
-      - ./${CLIENT_NAME}/config:/etc/odoo
-      - ./${CLIENT_NAME}/addons:/mnt/extra-addons
-      - ./${WEB_BUILD}/addons-enterprise:/mnt/enterprise-addons
+      - ./home/OdooCluster/${CLIENT_NAME}/odoo:/var/lib/odoo
+      - ./home/OdooCluster/${CLIENT_NAME}/config:/etc/odoo
+      - ./home/OdooCluster/${CLIENT_NAME}/addons:/mnt/extra-addons
+      - ./home/OdooCluster/${WEB_BUILD}/addons-enterprise:/mnt/enterprise-addons
     user: root
     entrypoint: ["/bin/sh", "-c", "cp /init-script.sh /tmp/init-script.sh && chmod +x /tmp/init-script.sh && /tmp/init-script.sh"]
     configs:
@@ -57,6 +55,6 @@ networks:
 
 configs:
   init_script:
-    file: ./${WEB_BUILD}/init-script.sh
+    file: ./home/OdooCluster/${WEB_BUILD}/init-script.sh
   init_db_sql:
-    file: ./${WEB_BUILD}/init-db.sql
+    file: ./home/OdooCluster/${WEB_BUILD}/init-db.sql
