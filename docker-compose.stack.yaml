@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./home/OdooCluster/${CLIENT_NAME}/pgdata:/var/lib/postgresql/data/pgdata
+      - DB_VOLUME:/var/lib/postgresql/data/pgdata
     networks:
       agent_network:
         aliases:
@@ -24,17 +24,14 @@ services:
     depends_on:
       - db
     volumes:
-      - ./home/OdooCluster/${CLIENT_NAME}/odoo:/var/lib/odoo
-      - ./home/OdooCluster/${CLIENT_NAME}/config:/etc/odoo
-      - ./home/OdooCluster/${CLIENT_NAME}/addons:/mnt/extra-addons
-      - ./home/OdooCluster/${WEB_BUILD}/addons-enterprise:/mnt/enterprise-addons
+      - ODOO_VOLUME_NAME:/var/lib/odoo
+      - ODOO_CONFIG_VOLUME_NAME:/etc/odoo
+      - ODOO_ADDONS_VOLUME_NAME:/mnt/extra-addons
+      - ODOO_ENTERPRISE_ADDONS_VOLUME_NAME:/mnt/enterprise-addons
+      - INIT_SCRIPT_VOLUME:/init-script
+      - INIT_DB_SQL_VOLUME:/init-db
     user: root
-    entrypoint: ["/bin/sh", "-c", "cp /init-script.sh /tmp/init-script.sh && chmod +x /tmp/init-script.sh && /tmp/init-script.sh"]
-    configs:
-      - source: init_script
-        target: /init-script.sh
-      - source: init_db_sql
-        target: /init-db.sql
+    entrypoint: ["/bin/sh", "-c", "cp /init-script/init-script.sh /tmp/init-script.sh && chmod +x /tmp/init-script.sh && /tmp/init-script.sh"]
     networks:
       - agent_network
       - traefik_public
@@ -53,8 +50,25 @@ networks:
   agent_network:
     external: true
 
-configs:
-  init_script:
-    file: ./home/OdooCluster/${WEB_BUILD}/init-script.sh
-  init_db_sql:
-    file: ./home/OdooCluster/${WEB_BUILD}/init-db.sql
+volumes:
+  DB_VOLUME:
+    external: true
+    name: DB_VOLUME_${CLIENT_NAME}
+  ODOO_VOLUME_NAME:
+    external: true
+    name: ODOO_VOLUME_${CLIENT_NAME}
+  ODOO_CONFIG_VOLUME_NAME:
+    external: true
+    name: ODOO_CONFIG_VOLUME_${CLIENT_NAME}
+  ODOO_ADDONS_VOLUME_NAME:
+    external: true
+    name: ODOO_ADDONS_VOLUME_${CLIENT_NAME}
+  ODOO_ENTERPRISE_ADDONS_VOLUME_NAME:
+    external: true
+    name: ODOO_ENTERPRISE_ADDONS_VOLUME_${CLIENT_NAME}
+  INIT_SCRIPT_VOLUME:
+    external: true
+    name: INIT_SCRIPT_VOLUME_${CLIENT_NAME}
+  INIT_DB_SQL_VOLUME:
+    external: true
+    name: INIT_DB_SQL_VOLUME_${CLIENT_NAME}
